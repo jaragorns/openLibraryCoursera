@@ -7,15 +7,40 @@
 //
 
 import UIKit
+import CoreData
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var tableView: UITableView!
     var books = NSMutableArray()
+    //var contexto : NSManagedObjectContex = nil
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.title = "LIBROS"
+        //self.contexto = (UIApplication.shared.delegate as! AppDelegate).Context
+//        let bookEntity = NSEntityDescription.entity(forEntityName: "Libros", in: context)
+//        let peticion = bookEntity?.managedObjectModel.fetchRequestTemplate(forName: "getBooks")
+        
+        let entity = NSEntityDescription.entity(forEntityName: "Libros", in: context)
+        
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Libros")
+        
+        do {
+            let result = try context.fetch(request)
+            self.books.removeAllObjects()
+            for data in result as! [NSManagedObject] {
+                let book = Book()
+                book.titulo = data.value(forKey: "bookTitle") as! String
+                book.autor = data.value(forKey: "bookAutor") as! String
+                book.cover = data.value(forKey: "bookCoverURL") as! String
+                self.books.add(book)
+            }
+            
+        } catch {
+            print("Failed Loading")
+        }
         self.tableView.reloadData()
     }
     
@@ -55,7 +80,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         self.performSegue(withIdentifier: "addBook", sender: nil)
     }
     
-    
     // MARK: - Segue
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -70,6 +94,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             let book = self.books.object(at: (tableView.indexPathForSelectedRow?.row)!) as! Book
             
             let nextViewController = segue.destination as! BookViewController
+            let backItem = UIBarButtonItem()
+            backItem.title = ""
+            navigationItem.backBarButtonItem = backItem
             nextViewController.book = book
         }
     }

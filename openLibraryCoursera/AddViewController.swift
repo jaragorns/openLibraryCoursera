@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class AddViewController: UIViewController {
     
@@ -18,6 +19,8 @@ class AddViewController: UIViewController {
     var books : NSMutableArray!
     var barButtonSave : UIBarButtonItem!
     var autores = ""
+    //var contexto = NSManagedObjectContext()
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,6 +102,23 @@ class AddViewController: UIViewController {
                     }
                 }
                 self.books.add(book)
+//                let saveBookEntity = NSEntityDescription.insertNewObject(forEntityName: "Libros", into: context)
+                let entity = NSEntityDescription.entity(forEntityName: "Libros", in: context)
+                let newBook = NSManagedObject(entity: entity!, insertInto: context)
+                if book.titulo != "" {
+                    newBook.setValue(book.titulo, forKey: "bookTitle")
+                }
+                if book.autor != "" {
+                    newBook.setValue(book.autor, forKey: "bookAutor")
+                }
+                if book.cover != "" {
+                    newBook.setValue(book.cover, forKey: "bookCoverURL")
+                    do{
+                        try context.save()
+                    }catch{
+                        print("Failed Saving")
+                    }
+                }
                 
             }catch let _ as NSError {
                 
